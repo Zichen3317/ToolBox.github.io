@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html data-bs-theme="auto" lang="zh">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>如何只用Python建属于自己的Blog</title>
+    <meta name="description" content="Python制作Blog教程">
+    <script>
+        (function() {
+
+            // JavaScript snippet handling Dark/Light mode switching
+
+            const getStoredTheme = () => localStorage.getItem('theme');
+            const setStoredTheme = theme => localStorage.setItem('theme', theme);
+            const forcedTheme = document.documentElement.getAttribute('data-bss-forced-theme');
+
+            const getPreferredTheme = () => {
+
+                if (forcedTheme) return forcedTheme;
+
+                const storedTheme = getStoredTheme();
+                if (storedTheme) {
+                    return storedTheme;
+                }
+
+                const pageTheme = document.documentElement.getAttribute('data-bs-theme');
+
+                if (pageTheme) {
+                    return pageTheme;
+                }
+
+                return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            }
+
+            const setTheme = theme => {
+                if (theme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    document.documentElement.setAttribute('data-bs-theme', 'dark');
+                } else {
+                    document.documentElement.setAttribute('data-bs-theme', theme);
+                }
+            }
+
+            setTheme(getPreferredTheme());
+
+            const showActiveTheme = (theme, focus = false) => {
+                const themeSwitchers = [].slice.call(document.querySelectorAll('.theme-switcher'));
+
+                if (!themeSwitchers.length) return;
+
+                document.querySelectorAll('[data-bs-theme-value]').forEach(element => {
+                    element.classList.remove('active');
+                    element.setAttribute('aria-pressed', 'false');
+                });
+
+                for (const themeSwitcher of themeSwitchers) {
+
+                    const btnToActivate = themeSwitcher.querySelector('[data-bs-theme-value="' + theme + '"]');
+
+                    if (btnToActivate) {
+                        btnToActivate.classList.add('active');
+                        btnToActivate.setAttribute('aria-pressed', 'true');
+                    }
+                }
+            }
+
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+                const storedTheme = getStoredTheme();
+                if (storedTheme !== 'light' && storedTheme !== 'dark') {
+                    setTheme(getPreferredTheme());
+                }
+            });
+
+            window.addEventListener('DOMContentLoaded', () => {
+                showActiveTheme(getPreferredTheme());
+
+                document.querySelectorAll('[data-bs-theme-value]')
+                    .forEach(toggle => {
+                        toggle.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            const theme = toggle.getAttribute('data-bs-theme-value');
+                            setStoredTheme(theme);
+                            setTheme(theme);
+                            showActiveTheme(theme);
+                        })
+                    })
+            });
+        })();
+    </script>
+    <link rel="stylesheet" href="../assets/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../assets/css/bss-overrides.css">
+    <link rel="stylesheet" href="../assets/css/Navbar-With-Button-icons.css">
+    <link rel="stylesheet" href="https://stackedit.io/style.css">
+</head>
+
+<body class="stackedit">
+    <nav class="navbar navbar-expand-md bg-body py-3">
+        <div class="container"><a class="navbar-brand d-flex align-items-center" href="#"><span class="bs-icon-sm bs-icon-rounded bs-icon-primary d-flex justify-content-center align-items-center me-2 bs-icon"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16" class="bi bi-tools">
+                        <path d="M1 0 0 1l2.2 3.081a1 1 0 0 0 .815.419h.07a1 1 0 0 1 .708.293l2.675 2.675-2.617 2.654A3.003 3.003 0 0 0 0 13a3 3 0 1 0 5.878-.851l2.654-2.617.968.968-.305.914a1 1 0 0 0 .242 1.023l3.27 3.27a.997.997 0 0 0 1.414 0l1.586-1.586a.997.997 0 0 0 0-1.414l-3.27-3.27a1 1 0 0 0-1.023-.242L10.5 9.5l-.96-.96 2.68-2.643A3.005 3.005 0 0 0 16 3c0-.269-.035-.53-.102-.777l-2.14 2.141L12 4l-.364-1.757L13.777.102a3 3 0 0 0-3.675 3.68L7.462 6.46 4.793 3.793a1 1 0 0 1-.293-.707v-.071a1 1 0 0 0-.419-.814zm9.646 10.646a.5.5 0 0 1 .708 0l2.914 2.915a.5.5 0 0 1-.707.707l-2.915-2.914a.5.5 0 0 1 0-.708M3 11l.471.242.529.026.287.445.445.287.026.529L5 13l-.242.471-.026.529-.445.287-.287.445-.529.026L3 15l-.471-.242L2 14.732l-.287-.445L1.268 14l-.026-.529L1 13l.242-.471.026-.529.445-.287.287-.445.529-.026z"></path>
+                    </svg></span><span>杂七杂八の工具箱</span></a><button data-bs-toggle="collapse" class="navbar-toggler" data-bs-target="#navcol-1"><span class="visually-hidden">Toggle navigation</span><span class="navbar-toggler-icon"></span></button>
+            <div class="collapse navbar-collapse" id="navcol-1">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link active" href="./index.html">主页</a></li>
+                    <li class="nav-item"><a class="nav-link" href="./Blog.html">博客</a></li>
+                    <li class="nav-item"></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class="stackedit__html">
+        <h1>如何只用Python建属于自己的Blog</h1>
+        <div class="d-flex flex-wrap gap-2" data-bss-type="author-loop">
+            <div class="author-zi-chen" data-bss-type="author-loop-item"><span>ZiChen</span></div>
+        </div><time datetime="2022-06-17">2022年6月17日</time>
+        <div class="d-flex flex-wrap gap-1 mb-3" data-bss-type="tag-loop"><span class="tag-technology" data-bss-type="tag-loop-item"><span class="badge bg-primary"><span>技术</span></span></span><span class="tag-python" data-bss-type="tag-loop-item"><span class="badge bg-primary"><span>Python</span></span></span></div>
+        <hr>
+        <h2><a id="Blog_3"></a>步骤一：建造Blog所需的前期工作</h2>
+        <ol>
+            <li>安装Python<strong>3.x</strong></li>
+            <li>安装以下模块</li>
+        </ol><pre><code class="prism language-python">pip install deta<span class="token punctuation">,</span>requests<span class="token punctuation">,</span>streamlit
+</code></pre><pre><code class="prism language-bash"><span class="token assign-left variable">deta</span><span class="token operator">==</span><span class="token number">1.1</span>.0
+<span class="token assign-left variable">requests</span><span class="token operator">==</span><span class="token number">2.25</span>.1
+<span class="token assign-left variable">streamlit</span><span class="token operator">==</span><span class="token number">1.10</span>.0
+</code></pre>
+        <ol start="3">
+            <li><strong>在</strong><a href="https://streamlit.io/"><strong>Streamlit</strong></a><strong>注册账号</strong></li>
+            <li><strong>在</strong><a href="https://github.com/"><strong>Github</strong></a><strong>注册账号</strong><em>（Streamlit在导入代码时需要你将代码上传到Github的仓库里）</em><br>具体请见→<a href="https://sspai.com/post/58474">如何用 Python 和 Streamlit 做交互式数据分析产品？</a></li>
+            <li><strong>在</strong><a href="https://web.deta.sh/"><strong>Deta</strong></a><strong>注册</strong> （<em>用于构建云数据库，是博客能在云端正常运行的刚需）</em><br>具体详见→<a href="https://docs.streamlit.io/knowledge-base/tutorials/databases/deta-base">将 Streamlit 连接到数据库</a><br></li>
+        </ol>
+        <hr>
+        <h2><a id="Blog_25"></a>步骤二：建造Blog的核心代码</h2>
+        <h3><a id="Blog_26"></a>Blog展示页</h3>
+        <p><img src="../assets/img/Blog/PythonMakeBlog220617/1.png" alt="请添加图片描述"></p>
+        <h4><a id="_28"></a>如何展示已发表的总文章数</h4>
+        <p>上代码</p><pre><code class="prism language-python"><span class="token comment"># 链接数据库</span>
+deta <span class="token operator">=</span> Deta<span class="token punctuation">(</span>st<span class="token punctuation">.</span>secrets<span class="token punctuation">[</span><span class="token string">"deta_key"</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+db <span class="token operator">=</span> deta<span class="token punctuation">.</span>Base<span class="token punctuation">(</span><span class="token string">'你的数据库的名字（如果没有则会创建）'</span><span class="token punctuation">)</span>
+<span class="token comment"># 获取数据库表头（字典形式）</span>
+Article_Data <span class="token operator">=</span> db<span class="token punctuation">.</span>fetch<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>items
+st<span class="token punctuation">.</span>metric<span class="token punctuation">(</span><span class="token string">'已发布文章数'</span><span class="token punctuation">,</span> <span class="token builtin">len</span><span class="token punctuation">(</span>Article_Data<span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token keyword">try</span><span class="token punctuation">:</span>
+    <span class="token keyword">for</span> i <span class="token keyword">in</span> Article_Data<span class="token punctuation">:</span>
+        <span class="token keyword">with</span> st<span class="token punctuation">.</span>expander<span class="token punctuation">(</span>i<span class="token punctuation">[</span><span class="token string">'name'</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            st<span class="token punctuation">.</span>markdown<span class="token punctuation">(</span>i<span class="token punctuation">[</span><span class="token string">'hometown'</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+<span class="token keyword">except</span> ValueError<span class="token punctuation">:</span>
+    <span class="token keyword">pass</span>
+<span class="token keyword">except</span> KeyError<span class="token punctuation">:</span>
+    <span class="token keyword">pass</span>
+</code></pre>
+        <p><strong>db.fetch().items</strong> 函数会遍历整个数据库并返回所有数据<br>返回的数据类型是列表，即以下结构</p><pre><code class="prism language-python"><span class="token punctuation">[</span>
+<span class="token punctuation">{</span><span class="token string">"name"</span><span class="token punctuation">:</span><span class="token string">""</span><span class="token punctuation">,</span><span class="token string">"age"</span><span class="token punctuation">:</span><span class="token string">""</span><span class="token punctuation">,</span><span class="token string">"hometown"</span><span class="token punctuation">:</span><span class="token string">""</span><span class="token punctuation">}</span><span class="token punctuation">,</span>
+<span class="token punctuation">{</span><span class="token string">"name"</span><span class="token punctuation">:</span><span class="token string">""</span><span class="token punctuation">,</span><span class="token string">"age"</span><span class="token punctuation">:</span><span class="token string">""</span><span class="token punctuation">,</span><span class="token string">"hometown"</span><span class="token punctuation">:</span><span class="token string">""</span><span class="token punctuation">}</span>
+<span class="token punctuation">]</span>
+<span class="token comment"># 说明:一条数据对应一个字典</span>
+</code></pre>
+        <div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Key</th>
+                        <th>Value</th>
+                        <th>类型</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>name</td>
+                        <td></td>
+                        <td>string</td>
+                    </tr>
+                    <tr>
+                        <td>age</td>
+                        <td></td>
+                        <td>int</td>
+                    </tr>
+                    <tr>
+                        <td>hometown</td>
+                        <td></td>
+                        <td>string</td>
+                    </tr>
+                    <tr>
+                        <td>key</td>
+                        <td></td>
+                        <td>string</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <p><strong>Deta</strong>官方给出的四个变量中，<em>name</em>、<em>age</em>、<em>hometown</em>是我们可以操作的，<br>而<em>key</em>是当我们在数据库中创建每条数据时系统派发的唯一的“身份证号码”，后续对这条数据的修改，删除也需要用到key</p><pre><code class="prism language-python">st<span class="token punctuation">.</span>metric<span class="token punctuation">(</span><span class="token string">'已发布文章数'</span><span class="token punctuation">,</span> <span class="token builtin">len</span><span class="token punctuation">(</span>Article_Data<span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+        <p>由于一条数据对应一个字典，所以直接使用len()函数统计返回的列表内元素总数即文章总数</p><pre><code class="prism language-python"><span class="token keyword">for</span> i <span class="token keyword">in</span> Article_Data<span class="token punctuation">:</span>
+        <span class="token keyword">with</span> st<span class="token punctuation">.</span>expander<span class="token punctuation">(</span>i<span class="token punctuation">[</span><span class="token string">'name'</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            st<span class="token punctuation">.</span>markdown<span class="token punctuation">(</span>i<span class="token punctuation">[</span><span class="token string">'hometown'</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+</code></pre>
+        <p>通过for语法循环创建用于存放文章的容器，可以实现自动化</p>
+        <ul>
+            <li>效果如下<br><img src="../assets/img/Blog/PythonMakeBlog220617/2.png" alt="在这里插入图片描述"></li>
+        </ul>
+        <h3><a id="Blog_80"></a>Blog操作页</h3>
+        <h4><a id="_81"></a>如何做到构建一个可以在云端创建、修改、删除自己文章的页面</h4>
+        <p><img src="../assets/img/Blog/PythonMakeBlog220617/3.png" alt="请添加图片描述"></p>
+        <ol>
+            <li><strong>创建</strong><br>先上代码</li>
+        </ol><pre><code class="prism language-python"><span class="token comment"># 获取数据库数据 [{}]</span>
+Article_Dict <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token punctuation">}</span>
+<span class="token keyword">try</span><span class="token punctuation">:</span>
+    Article_Data <span class="token operator">=</span> db<span class="token punctuation">.</span>fetch<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>items
+    <span class="token keyword">for</span> i <span class="token keyword">in</span> Article_Data<span class="token punctuation">:</span>
+        Article_Dict<span class="token punctuation">[</span>i<span class="token punctuation">[</span><span class="token string">'name'</span><span class="token punctuation">]</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token string">'key'</span><span class="token punctuation">:</span> i<span class="token punctuation">[</span><span class="token string">'key'</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+                                   <span class="token string">'content'</span><span class="token punctuation">:</span> i<span class="token punctuation">[</span><span class="token string">'hometown'</span><span class="token punctuation">]</span><span class="token punctuation">}</span>
+<span class="token keyword">except</span> KeyError<span class="token punctuation">:</span>
+    <span class="token keyword">pass</span>
+<span class="token keyword">except</span> ValueError<span class="token punctuation">:</span>
+    <span class="token keyword">pass</span>
+    
+<span class="token comment">#创建 页面组件</span>
+    <span class="token keyword">with</span> st<span class="token punctuation">.</span>form<span class="token punctuation">(</span><span class="token string">'文章必要信息录入'</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        Author_PASSWORD_New <span class="token operator">=</span> st<span class="token punctuation">.</span>text_input<span class="token punctuation">(</span><span class="token string">'权限密码'</span><span class="token punctuation">)</span>
+        Article_Name <span class="token operator">=</span> st<span class="token punctuation">.</span>text_input<span class="token punctuation">(</span><span class="token string">'文章名称'</span><span class="token punctuation">)</span>
+        Article_Author <span class="token operator">=</span> st<span class="token punctuation">.</span>text_input<span class="token punctuation">(</span><span class="token string">'作者'</span><span class="token punctuation">)</span>
+        Article_Content <span class="token operator">=</span> st<span class="token punctuation">.</span>text_area<span class="token punctuation">(</span><span class="token string">'文章内容'</span><span class="token punctuation">)</span>
+        preview <span class="token operator">=</span> st<span class="token punctuation">.</span>form_submit_button<span class="token punctuation">(</span><span class="token string">'预览👁'</span><span class="token punctuation">)</span>
+        submitted <span class="token operator">=</span> st<span class="token punctuation">.</span>form_submit_button<span class="token punctuation">(</span><span class="token string">'发布文章'</span><span class="token punctuation">)</span>
+        <span class="token keyword">if</span> submitted<span class="token punctuation">:</span>
+            <span class="token keyword">if</span> Author_PASSWORD_New <span class="token operator">==</span> st<span class="token punctuation">.</span>secrets<span class="token punctuation">[</span><span class="token string">"author_password"</span><span class="token punctuation">]</span><span class="token punctuation">:</span>
+                submitted_Time <span class="token operator">=</span> <span class="token builtin">str</span><span class="token punctuation">(</span>datetime<span class="token punctuation">.</span>today<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token string">'.'</span><span class="token punctuation">)</span><span class="token punctuation">[</span>
+                    <span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+                <span class="token keyword">try</span><span class="token punctuation">:</span>
+                    st<span class="token punctuation">.</span>info<span class="token punctuation">(</span><span class="token string">'开始写入 %s-%s'</span> <span class="token operator">%</span> <span class="token punctuation">(</span>Article_Author<span class="token punctuation">,</span> Article_Name<span class="token punctuation">)</span><span class="token punctuation">)</span>
+                    result <span class="token operator">=</span> db<span class="token punctuation">.</span>put<span class="token punctuation">(</span><span class="token punctuation">{</span>
+                        <span class="token string">"name"</span><span class="token punctuation">:</span> <span class="token string">"%s|%s-%s"</span> <span class="token operator">%</span> <span class="token punctuation">(</span>submitted_Time<span class="token punctuation">,</span> Article_Author<span class="token punctuation">,</span> Article_Name<span class="token punctuation">)</span><span class="token punctuation">,</span>
+                        <span class="token string">"hometown"</span><span class="token punctuation">:</span> <span class="token builtin">str</span><span class="token punctuation">(</span>Article_Content<span class="token punctuation">)</span>
+                    <span class="token punctuation">}</span><span class="token punctuation">)</span>
+                    st<span class="token punctuation">.</span>success<span class="token punctuation">(</span><span class="token string">'✔写入成功！'</span><span class="token punctuation">)</span>
+                    st<span class="token punctuation">.</span>balloons<span class="token punctuation">(</span><span class="token punctuation">)</span>
+                    <span class="token punctuation">)</span><span class="token punctuation">)</span>
+                <span class="token keyword">except</span><span class="token punctuation">:</span>
+                    st<span class="token punctuation">.</span>error<span class="token punctuation">(</span>traceback<span class="token punctuation">.</span>format_exc<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+            <span class="token keyword">else</span><span class="token punctuation">:</span>
+                st<span class="token punctuation">.</span>warning<span class="token punctuation">(</span><span class="token string">"❌未获取上传权限！请检查权限密码是否正确！"</span><span class="token punctuation">)</span>
+</code></pre>
+        <p>我们分别解析</p><pre><code class="prism language-python"><span class="token comment"># 获取数据库数据 [{}]</span>
+Article_Dict <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token punctuation">}</span>
+<span class="token keyword">try</span><span class="token punctuation">:</span>
+    Article_Data <span class="token operator">=</span> db<span class="token punctuation">.</span>fetch<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>items
+    <span class="token keyword">for</span> i <span class="token keyword">in</span> Article_Data<span class="token punctuation">:</span>
+        Article_Dict<span class="token punctuation">[</span>i<span class="token punctuation">[</span><span class="token string">'name'</span><span class="token punctuation">]</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token string">'key'</span><span class="token punctuation">:</span> i<span class="token punctuation">[</span><span class="token string">'key'</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+                                   <span class="token string">'content'</span><span class="token punctuation">:</span> i<span class="token punctuation">[</span><span class="token string">'hometown'</span><span class="token punctuation">]</span><span class="token punctuation">}</span>
+<span class="token keyword">except</span> KeyError<span class="token punctuation">:</span>
+    <span class="token keyword">pass</span>
+<span class="token keyword">except</span> ValueError<span class="token punctuation">:</span>
+    <span class="token keyword">pass</span>
+</code></pre>
+        <p>在使用过程中，由于<em>age</em>在数据库中被设置为int(整形),并不方便我们使用，而且我们也只需要使用到三个变量，变量对应的内容如下</p>
+        <div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>变量</th>
+                        <th>内容</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>name</td>
+                        <td>文章的标题</td>
+                    </tr>
+                    <tr>
+                        <td>hometown</td>
+                        <td>文章的内容</td>
+                    </tr>
+                    <tr>
+                        <td>key</td>
+                        <td>文章数据对应的“身份证号”</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <p>在处理时，将三个变量处理为以下结构，方便在后面使用时<strong>直接通过文章标题定位相应数据</strong></p><pre><code class="prism language-python"><span class="token comment"># name作为键，包含age,key,hometown三个变量的字典作为值</span>
+<span class="token punctuation">{</span>
+<span class="token string">"name"</span><span class="token punctuation">:</span><span class="token punctuation">{</span><span class="token string">"age"</span><span class="token punctuation">:</span><span class="token string">""</span><span class="token punctuation">,</span><span class="token string">"hometown"</span><span class="token punctuation">:</span><span class="token string">""</span><span class="token punctuation">,</span><span class="token string">"key"</span><span class="token punctuation">:</span><span class="token string">""</span><span class="token punctuation">}</span>，
+<span class="token string">"name"</span><span class="token punctuation">:</span><span class="token punctuation">{</span><span class="token string">"age"</span><span class="token punctuation">:</span><span class="token string">""</span><span class="token punctuation">,</span><span class="token string">"hometown"</span><span class="token punctuation">:</span><span class="token string">""</span><span class="token punctuation">,</span><span class="token string">"key"</span><span class="token punctuation">:</span><span class="token string">""</span><span class="token punctuation">}</span>
+<span class="token punctuation">{</span>
+</code></pre><pre><code class="prism language-python"><span class="token comment">#创建 页面组件</span>
+    <span class="token keyword">with</span> st<span class="token punctuation">.</span>form<span class="token punctuation">(</span><span class="token string">'文章必要信息录入'</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        Author_PASSWORD_New <span class="token operator">=</span> st<span class="token punctuation">.</span>text_input<span class="token punctuation">(</span><span class="token string">'权限密码'</span><span class="token punctuation">)</span>
+        Article_Name <span class="token operator">=</span> st<span class="token punctuation">.</span>text_input<span class="token punctuation">(</span><span class="token string">'文章名称'</span><span class="token punctuation">)</span>
+        Article_Author <span class="token operator">=</span> st<span class="token punctuation">.</span>text_input<span class="token punctuation">(</span><span class="token string">'作者'</span><span class="token punctuation">)</span>
+        Article_Content <span class="token operator">=</span> st<span class="token punctuation">.</span>text_area<span class="token punctuation">(</span><span class="token string">'文章内容'</span><span class="token punctuation">)</span>
+        preview <span class="token operator">=</span> st<span class="token punctuation">.</span>form_submit_button<span class="token punctuation">(</span><span class="token string">'预览👁'</span><span class="token punctuation">)</span>
+        submitted <span class="token operator">=</span> st<span class="token punctuation">.</span>form_submit_button<span class="token punctuation">(</span><span class="token string">'发布文章'</span><span class="token punctuation">)</span>
+        <span class="token keyword">if</span> submitted<span class="token punctuation">:</span>
+            <span class="token keyword">if</span> Author_PASSWORD_New <span class="token operator">==</span> st<span class="token punctuation">.</span>secrets<span class="token punctuation">[</span><span class="token string">"author_password"</span><span class="token punctuation">]</span><span class="token punctuation">:</span>
+                submitted_Time <span class="token operator">=</span> <span class="token builtin">str</span><span class="token punctuation">(</span>datetime<span class="token punctuation">.</span>today<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token string">'.'</span><span class="token punctuation">)</span><span class="token punctuation">[</span>
+                    <span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+                <span class="token keyword">try</span><span class="token punctuation">:</span>
+                    st<span class="token punctuation">.</span>info<span class="token punctuation">(</span><span class="token string">'开始写入 %s-%s'</span> <span class="token operator">%</span> <span class="token punctuation">(</span>Article_Author<span class="token punctuation">,</span> Article_Name<span class="token punctuation">)</span><span class="token punctuation">)</span>
+                    result <span class="token operator">=</span> db<span class="token punctuation">.</span>put<span class="token punctuation">(</span><span class="token punctuation">{</span>
+                        <span class="token string">"name"</span><span class="token punctuation">:</span> <span class="token string">"%s|%s-%s"</span> <span class="token operator">%</span> <span class="token punctuation">(</span>submitted_Time<span class="token punctuation">,</span> Article_Author<span class="token punctuation">,</span> Article_Name<span class="token punctuation">)</span><span class="token punctuation">,</span>
+                        <span class="token string">"hometown"</span><span class="token punctuation">:</span> <span class="token builtin">str</span><span class="token punctuation">(</span>Article_Content<span class="token punctuation">)</span>
+                    <span class="token punctuation">}</span><span class="token punctuation">)</span>
+                    st<span class="token punctuation">.</span>success<span class="token punctuation">(</span><span class="token string">'✔写入成功！'</span><span class="token punctuation">)</span>
+                    st<span class="token punctuation">.</span>balloons<span class="token punctuation">(</span><span class="token punctuation">)</span>
+                <span class="token keyword">except</span><span class="token punctuation">:</span>
+                    st<span class="token punctuation">.</span>error<span class="token punctuation">(</span>traceback<span class="token punctuation">.</span>format_exc<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+            <span class="token keyword">else</span><span class="token punctuation">:</span>
+                st<span class="token punctuation">.</span>warning<span class="token punctuation">(</span><span class="token string">"❌未获取上传权限！请检查权限密码是否正确！"</span><span class="token punctuation">)</span>
+</code></pre>
+        <p>这里的代码对应的界面如下<br><img src="../assets/img/Blog/PythonMakeBlog220617/4.png" alt="在这里插入图片描述"></p>
+        <div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>变量</th>
+                        <th>含义</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>权限密码</td>
+                        <td>这个是额外增加的密码，由于整个页面都挂载在云端，意味着所有访问这一页面的人都可以对你的博客文章的内容进行操作，这无疑是不被允许的。增加该密码后，如果来者没有该密码则无法对文章进行操作，但可以使用预览功能（在后面会展示代码）来测试效果</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <ol start="2">
+            <li><strong>修改</strong></li>
+        </ol><pre><code class="prism language-python">        Author_PASSWORD_Modify <span class="token operator">=</span> st<span class="token punctuation">.</span>text_input<span class="token punctuation">(</span><span class="token string">'权限密码'</span><span class="token punctuation">)</span>
+        Article_Select <span class="token operator">=</span> st<span class="token punctuation">.</span>selectbox<span class="token punctuation">(</span>
+            <span class="token string">"数据库文章列表"</span><span class="token punctuation">,</span> Article_Dict<span class="token punctuation">.</span>keys<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+        Article_Modify_view <span class="token operator">=</span> st<span class="token punctuation">.</span>form_submit_button<span class="token punctuation">(</span><span class="token string">'查看'</span><span class="token punctuation">)</span>
+        Article_Modify_Content <span class="token operator">=</span> st<span class="token punctuation">.</span>text_area<span class="token punctuation">(</span>
+            label<span class="token operator">=</span><span class="token string">'修改后的文章内容'</span><span class="token punctuation">,</span> value<span class="token operator">=</span><span class="token string">''</span><span class="token punctuation">)</span>
+
+        Article_Modify_preview <span class="token operator">=</span> st<span class="token punctuation">.</span>form_submit_button<span class="token punctuation">(</span><span class="token string">'预览'</span><span class="token punctuation">)</span>
+        Article_Modify_submitted <span class="token operator">=</span> st<span class="token punctuation">.</span>form_submit_button<span class="token punctuation">(</span><span class="token string">'提交'</span><span class="token punctuation">)</span>
+
+        <span class="token keyword">if</span> Article_Modify_submitted<span class="token punctuation">:</span>
+            <span class="token keyword">if</span> Author_PASSWORD_Modify <span class="token operator">==</span> st<span class="token punctuation">.</span>secrets<span class="token punctuation">[</span><span class="token string">"author_password"</span><span class="token punctuation">]</span><span class="token punctuation">:</span>
+                Modify_Time <span class="token operator">=</span> <span class="token builtin">str</span><span class="token punctuation">(</span>datetime<span class="token punctuation">.</span>today<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token string">'.'</span><span class="token punctuation">)</span><span class="token punctuation">[</span>
+                    <span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+                <span class="token keyword">try</span><span class="token punctuation">:</span>
+                    <span class="token comment"># TIP：文章名称格式为 创建日期|作者-文章名，上传修改版本后需要把创建日期替换掉</span>
+                    st<span class="token punctuation">.</span>info<span class="token punctuation">(</span><span class="token string">'开始修改%s'</span> <span class="token operator">%</span>
+                            Article_Select<span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token string">'|'</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+                    <span class="token comment"># 修改时需附带上传原文章key</span>
+                    <span class="token comment"># 注意在重命名时，由于原文章名中包含了时间，故需要将原时间切除后加入新时间</span>
+                    result <span class="token operator">=</span> db<span class="token punctuation">.</span>put<span class="token punctuation">(</span><span class="token punctuation">{</span>
+                        <span class="token string">"name"</span><span class="token punctuation">:</span> <span class="token string">"%s|%s"</span> <span class="token operator">%</span> <span class="token punctuation">(</span>Modify_Time<span class="token punctuation">,</span> Article_Select<span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token string">'|'</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+                        <span class="token string">"hometown"</span><span class="token punctuation">:</span> <span class="token string">'- *[修改时间] %s* \n%s'</span> <span class="token operator">%</span> <span class="token punctuation">(</span>Modify_Time<span class="token punctuation">,</span> Article_Modify_Content<span class="token punctuation">)</span><span class="token punctuation">}</span><span class="token punctuation">,</span> Article_Dict<span class="token punctuation">[</span>Article_Select<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token string">'key'</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+                    st<span class="token punctuation">.</span>success<span class="token punctuation">(</span><span class="token string">'✔修改成功！'</span><span class="token punctuation">)</span>
+                    st<span class="token punctuation">.</span>balloons<span class="token punctuation">(</span><span class="token punctuation">)</span>
+                <span class="token keyword">except</span><span class="token punctuation">:</span>
+                    st<span class="token punctuation">.</span>error<span class="token punctuation">(</span>traceback<span class="token punctuation">.</span>format_exc<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+            <span class="token keyword">else</span><span class="token punctuation">:</span>
+                st<span class="token punctuation">.</span>warning<span class="token punctuation">(</span><span class="token string">"❌未获取修改权限！请检查权限密码是否正确！"</span><span class="token punctuation">)</span>
+
+</code></pre>
+        <p>同样的，修改文章同样需要权限密码，这里的权限密码和写入时使用的密码是相同的，变量名不同只是易于区分<br><img src="../assets/img/Blog/PythonMakeBlog220617/5.png" alt="在这里插入图片描述"></p>
+        <ul>
+            <li>在使用时，Article_Select（单选框组件）会调用前面已经处理好的Article_Dict，返回其中的name变量（列表形式），然后呈现出来</li>
+            <li>点击<strong>查看</strong>，会呈现出两部分内容，一部分是该文章对应的markdown代码，一部分是直接呈现内容（具体效果到→<a href="https://share.streamlit.io/zichen3317/webtool-box/main/Home.py/Article_WriteTool">查看</a>）</li>
+            <li>输入修改后的文章内容后，点击<strong>预览</strong>即可在预览页面预览文章在网站上的呈现效果</li>
+            <li>点击<strong>修改</strong>，即可上传修改版本</li>
+        </ul>
+        <ol start="3">
+            <li><strong>删除</strong></li>
+        </ol><pre><code class="prism language-python">    <span class="token keyword">with</span> st<span class="token punctuation">.</span>form<span class="token punctuation">(</span><span class="token string">'删除指定文章'</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        Author_PASSWORD_Delete <span class="token operator">=</span> st<span class="token punctuation">.</span>text_input<span class="token punctuation">(</span><span class="token string">'权限密码'</span><span class="token punctuation">)</span>
+        <span class="token comment"># 多选框，返回列表</span>
+        Article_MutiSelect <span class="token operator">=</span> st<span class="token punctuation">.</span>multiselect<span class="token punctuation">(</span>
+            <span class="token string">"数据库文章列表"</span><span class="token punctuation">,</span> Article_Dict<span class="token punctuation">.</span>keys<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+        Article_Delete_preview <span class="token operator">=</span> st<span class="token punctuation">.</span>form_submit_button<span class="token punctuation">(</span><span class="token string">'预览'</span><span class="token punctuation">)</span>
+        Article_Delete_submitted <span class="token operator">=</span> st<span class="token punctuation">.</span>form_submit_button<span class="token punctuation">(</span><span class="token string">'删除'</span><span class="token punctuation">)</span>
+
+        <span class="token keyword">if</span> Article_Delete_submitted<span class="token punctuation">:</span>
+            <span class="token keyword">if</span> Author_PASSWORD_Delete <span class="token operator">==</span> st<span class="token punctuation">.</span>secrets<span class="token punctuation">[</span><span class="token string">"author_password"</span><span class="token punctuation">]</span><span class="token punctuation">:</span>
+                <span class="token keyword">try</span><span class="token punctuation">:</span>
+                    Delete_Message <span class="token operator">=</span> <span class="token string">''</span>
+                    <span class="token keyword">for</span> i <span class="token keyword">in</span> Article_MutiSelect<span class="token punctuation">:</span>
+                        result <span class="token operator">=</span> db<span class="token punctuation">.</span>delete<span class="token punctuation">(</span>Article_Dict<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token string">'key'</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+                        Delete_Message <span class="token operator">=</span> Delete_Message<span class="token operator">+</span><span class="token string">'已删除:%s\n'</span> <span class="token operator">%</span> i
+                    st<span class="token punctuation">.</span>info<span class="token punctuation">(</span>Delete_Message<span class="token punctuation">)</span>
+                <span class="token keyword">except</span><span class="token punctuation">:</span>
+                    st<span class="token punctuation">.</span>error<span class="token punctuation">(</span>traceback<span class="token punctuation">.</span>format_exc<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+            <span class="token keyword">else</span><span class="token punctuation">:</span>
+                st<span class="token punctuation">.</span>warning<span class="token punctuation">(</span><span class="token string">"❌未获取删除权限！请检查权限密码是否正确！"</span><span class="token punctuation">)</span>
+</code></pre>
+        <p>同理，只不过<strong>删除</strong>页面的选择框改为多项选择，便于批量删除，在预览时也是批量预览</p>
+        <ol start="4">
+            <li><strong>预览</strong></li>
+        </ol><pre><code class="prism language-python"><span class="token comment"># 中部是预览窗口，需要放在最后</span>
+<span class="token keyword">with</span> st<span class="token punctuation">.</span>container<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    st<span class="token punctuation">.</span>markdown<span class="token punctuation">(</span><span class="token string">"***"</span><span class="token punctuation">)</span>
+    st<span class="token punctuation">.</span>markdown<span class="token punctuation">(</span><span class="token string">"### 👁预览界面"</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 写作时的文章预览</span>
+    <span class="token keyword">if</span> preview<span class="token punctuation">:</span>
+        preview_Time <span class="token operator">=</span> <span class="token builtin">str</span><span class="token punctuation">(</span>datetime<span class="token punctuation">.</span>today<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token string">'.'</span><span class="token punctuation">)</span><span class="token punctuation">[</span>
+            <span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+
+        st<span class="token punctuation">.</span>markdown<span class="token punctuation">(</span><span class="token string">'\n ## %s|%s-%s'</span> <span class="token operator">%</span>
+                    <span class="token punctuation">(</span>Article_Name<span class="token punctuation">,</span> Article_Author<span class="token punctuation">,</span> preview_Time<span class="token punctuation">)</span><span class="token punctuation">)</span>
+        st<span class="token punctuation">.</span>markdown<span class="token punctuation">(</span>Article_Content<span class="token punctuation">)</span>
+<span class="token comment"># 修改时的文章预览</span>
+
+    <span class="token keyword">if</span> Article_Modify_view<span class="token punctuation">:</span>
+        st<span class="token punctuation">.</span>markdown<span class="token punctuation">(</span><span class="token string">"## 修改前文章:"</span><span class="token punctuation">)</span>
+        st<span class="token punctuation">.</span>text<span class="token punctuation">(</span><span class="token string">"%s "</span> <span class="token operator">%</span>
+                Article_Dict<span class="token punctuation">[</span>Article_Select<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token string">'content'</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+        st<span class="token punctuation">.</span>markdown<span class="token punctuation">(</span><span class="token string">"***"</span><span class="token punctuation">)</span>
+        st<span class="token punctuation">.</span>markdown<span class="token punctuation">(</span><span class="token string">' ## %s'</span> <span class="token operator">%</span> Article_Select<span class="token punctuation">)</span>
+        st<span class="token punctuation">.</span>markdown<span class="token punctuation">(</span>Article_Dict<span class="token punctuation">[</span>Article_Select<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token string">'content'</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+    <span class="token keyword">if</span> Article_Modify_preview<span class="token punctuation">:</span>
+        st<span class="token punctuation">.</span>markdown<span class="token punctuation">(</span>Article_Modify_Content<span class="token punctuation">)</span>
+
+<span class="token comment"># 删除时的文章预览</span>
+    <span class="token keyword">if</span> Article_Delete_preview<span class="token punctuation">:</span>
+        <span class="token keyword">for</span> i <span class="token keyword">in</span> Article_MutiSelect<span class="token punctuation">:</span>
+            <span class="token keyword">with</span> st<span class="token punctuation">.</span>expander<span class="token punctuation">(</span>i<span class="token punctuation">)</span><span class="token punctuation">:</span>
+                st<span class="token punctuation">.</span>markdown<span class="token punctuation">(</span>Article_Dict<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token string">'content'</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+
+</code></pre>
+        <p>由于<strong>预览</strong>容器需要在特定按钮按下后呈现，所以放在代码的最后，防止出现定义前调用导致的错误</p>
+        <h2><a id="_295"></a>最后</h2>
+        <ul>
+            <li><p>在实际操作时，你可能需要用到三个密码</p>
+                <ol>
+                    <li>Deta数据库密码</li>
+                    <li>权限密码</li>
+                    <li>（可能用到）推送服务密码</li>
+                </ol>
+            </li>
+            <li><p>如果你想给你的Blog添加信息推送服务，不妨考虑<a href="https://gitee.com/easychen/pushdeer">PushDeer</a></p></li>
+        </ul>
+    </div>
+    <footer class="text-center bg-body" data-bs-theme="light">
+        <div class="container py-4 py-lg-5">
+            <ul class="list-inline">
+                <li class="list-inline-item me-4"><a href="#"></a></li>
+                <li class="list-inline-item me-4"><a href="https://github.com/Zichen3317"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16" class="bi bi-github text-body">
+                            <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8"></path>
+                        </svg></a></li>
+                <li class="list-inline-item"><a href="#"></a></li>
+            </ul>
+            <p class="text-body mb-0">Copyright © 2026 ZiChen</p>
+        </div>
+    </footer>
+    <script>
+        (function() {
+            let collections = document.querySelectorAll('[data-bss-type="blog-loop"]');
+            let tagNavs = document.querySelectorAll('[data-bss-type="tag-nav"]');
+            let tagLoops = document.querySelectorAll('[data-bss-type="tag-loop"]');
+            let authorLoops = document.querySelectorAll('[data-bss-type="author-loop"]');
+            let authorNavs = document.querySelectorAll('[data-bss-type="author-nav"]');
+
+            window.addEventListener("popstate", (e) => {
+                for (let collection of collections) {
+                    updateCollection(collection);
+                }
+
+                for (let tagNav of tagNavs) {
+                    updateTagNav(tagNav);
+                }
+
+                for (let authorNav of authorNavs) {
+                    updateAuthorNav(authorNav);
+                }
+            });
+
+            for (let collection of collections) {
+
+                updateCollection(collection);
+
+                if (!canPaginateCollection(collection)) continue;
+
+                let pagination = collection.querySelector('[data-bss-type="blog-loop-pagination"]');
+
+                pagination.addEventListener('click', function(e) {
+                    let paginationItem = e.target.closest('.page-item');
+                    if (!paginationItem) return;
+
+                    e.preventDefault();
+
+                    if (paginationItem.classList.contains('disabled') || paginationItem.classList.contains('active')) return;
+
+                    let collection = paginationItem.closest('[data-bss-type="blog-loop"]');
+                    if (!collection) return;
+
+                    let page = parseInt(paginationItem.dataset.page);
+                    if (!page) return;
+
+                    let pageParam = getPageParameter(collection);
+
+                    if (pageParam) {
+                        const url = new URL(window.location);
+                        url.searchParams.set(pageParam, page);
+                        history.pushState({
+                            [pageParam]: page
+                        }, document.title, url);
+
+                        for (let c of collections) {
+                            let param = getPageParameter(c);
+                            if (param !== pageParam) continue;
+                            updateCollection(c);
+                        }
+                    } else {
+                        updateCollection(collection, page);
+                    }
+                });
+            }
+
+            for (let tagNav of tagNavs) {
+                updateTagNav(tagNav);
+                tagNav.addEventListener('click', onTagClick);
+            }
+
+            for (let tagLoop of tagLoops) {
+                tagLoop.addEventListener('click', onTagClick);
+            }
+
+            for (let authorLoop of authorLoops) {
+                authorLoop.addEventListener('click', onAuthorClick);
+            }
+
+            for (let authorNav of authorNavs) {
+                updateAuthorNav(authorNav);
+            }
+
+            function onTagClick(e) {
+                onBlogFilterClick(e);
+
+                for (let nav of tagNavs) {
+                    updateTagNav(nav);
+                }
+            }
+
+            function onAuthorClick(e) {
+                onBlogFilterClick(e);
+
+                for (let authorNav of authorNavs) {
+                    updateAuthorNav(authorNav);
+                }
+            }
+
+            function onBlogFilterClick(e) {
+                const item = e.target.closest('[data-bss-filter="blog"]');
+                if (!item || !item.dataset.hasOwnProperty('bssHref') || !item.dataset.hasOwnProperty('bssFilterParam')) return;
+
+                const stateNode = item.dataset.hasOwnProperty('bssStateNode') ? item : item.querySelector('[data-bss-state-node]');
+
+                if (stateNode && (stateNode.classList.contains('disabled') || stateNode.classList.contains('active'))) {
+                    e.preventDefault();
+                    return;
+                }
+
+                const link = item.dataset.bssHref;
+                if (!linksToCurrentPage(link)) return;
+
+                e.preventDefault();
+
+                const url = new URL(window.location);
+                const filterParam = item.dataset.bssFilterParam;
+                const filterValue = item.dataset.bssFilterValue || '';
+
+                const collectionsToUpdate = [];
+                const newQueryParams = {
+                    [filterParam]: filterValue
+                };
+
+                for (let c of collections) {
+                    if (!canFilterCollection(c)) continue;
+                    collectionsToUpdate.push(c);
+
+                    let pageParam = getPageParameter(c);
+                    let page = url.searchParams.get(pageParam);
+                    if (page === null || page == 1) continue;
+
+                    newQueryParams[pageParam] = 1;
+                }
+
+                for (let param in newQueryParams) {
+                    if (newQueryParams[param]) {
+                        url.searchParams.set(param, newQueryParams[param]);
+                    } else {
+                        url.searchParams.delete(param);
+                    }
+                }
+
+                history.pushState(newQueryParams, document.title, url);
+
+                for (let c of collectionsToUpdate) {
+                    updateCollection(c);
+                }
+            }
+
+            function getCollectionFilters(collection) {
+                let filters = [];
+
+                try {
+                    const parsed = JSON.parse(collection.dataset.bssFilters);
+
+                    if (Array.isArray(parsed)) {
+                        filters = parsed;
+                    }
+                } catch (e) {}
+
+                return filters;
+            }
+
+            function getCollectionEmptyFilterAction(collection, filter = '') {
+                let emptyFilterActions = [];
+
+                try {
+                    const parsed = JSON.parse(collection.dataset.bssEmptyFilterActions);
+
+                    if (Array.isArray(parsed)) {
+                        emptyFilterActions = parsed;
+                    }
+                } catch (e) {}
+
+                const action = emptyFilterActions.find(action => action.filter === filter);
+
+                return action ? action.value : '';
+            }
+
+            function canFilterCollection(collection) {
+                return !!getCollectionFilters(collection).length;
+            }
+
+            function canFilterCollectionByTag(collection) {
+                return getCollectionFilters(collection).includes('tag');
+            }
+
+            function canFilterCollectionByAuthor(collection) {
+                return getCollectionFilters(collection).includes('author');
+            }
+
+            function shouldShowAllItemsForEmptyFilter(collection, filter = '') {
+                return getCollectionEmptyFilterAction(collection, filter) === 'show-all';
+            }
+
+            function canPaginateCollection(collection) {
+                return !!getCollectionPagination(collection);
+            }
+
+            function getCollectionPagination(collection) {
+                return collection.querySelector('[data-bss-type="blog-loop-pagination"]');
+            }
+
+            function getPageParameter(collection) {
+                return collection.dataset.bssPageParam;
+            }
+
+            function linksToCurrentPage(path = '') {
+                let currentURL, url;
+
+                try {
+                    currentURL = new URL(window.location);
+                    url = new URL(path, window.location.href);
+                } catch (e) {
+                    console.error(e);
+                }
+
+                return currentURL.origin === url.origin && currentURL.pathname === url.pathname;
+            }
+
+            function updateCollection(collection, page, activeTag = '', activeAuthor = '') {
+
+                const url = new URL(window.location.href);
+
+                if (canPaginateCollection(collection)) {
+                    if (!page) {
+                        let pageParam = getPageParameter(collection);
+                        page = (pageParam ? url.searchParams.get(pageParam) : 1) || 1;
+                    }
+                }
+
+                if (canFilterCollectionByTag(collection) && !activeTag) {
+                    let tagParam = 'tag';
+                    activeTag = url.searchParams.get(tagParam) || '';
+                }
+
+                if (canFilterCollectionByAuthor(collection) && !activeAuthor) {
+                    let authorParam = 'author';
+                    activeAuthor = url.searchParams.get(authorParam) || '';
+                }
+
+                renderCollectionPage(collection, page, activeTag, activeAuthor);
+            }
+
+            function renderCollectionPage(collection, page = 1, activeTag = '', activeAuthor = '') {
+
+                page = Math.max(parseInt(page, 10), 1);
+
+                collection.style.removeProperty('display');
+
+                let loopBase = collection.querySelector('[data-bss-type="blog-loop-base"]');
+                loopBase && loopBase.style.removeProperty('display');
+
+                let emptyState = collection.querySelector('[data-bss-type="empty-state"]');
+                emptyState && emptyState.style.setProperty('display', 'none', 'important');
+
+                let listItems = [].slice.call(collection.querySelectorAll('[data-bss-type="blog-loop-item"]'));
+                listItems.forEach(item => item.style.setProperty('display', 'none', 'important'));
+
+                if (canFilterCollectionByTag(collection)) {
+                    listItems = listItems.filter(item => activeTag ? item.classList.contains('post-tag-' + activeTag) : shouldShowAllItemsForEmptyFilter(collection, 'tag'));
+                }
+
+                if (canFilterCollectionByAuthor(collection)) {
+                    listItems = listItems.filter(item => activeAuthor ? item.classList.contains('post-author-' + activeAuthor) : shouldShowAllItemsForEmptyFilter(collection, 'author'));
+                }
+
+                let perPage = collection.dataset.bssPerpage || listItems.length;
+                let visibleListItems = listItems.slice((page - 1) * perPage, page * perPage);
+                visibleListItems.forEach(item => item.style.removeProperty('display'));
+
+                let isEmpty = !visibleListItems.length;
+
+                if (isEmpty) {
+                    loopBase && loopBase.style.setProperty('display', 'none', 'important');
+                    emptyState && emptyState.style.removeProperty('display');
+                }
+
+                let itemCount = listItems.length;
+                let pageCount = Math.max(Math.ceil(itemCount / perPage), 1);
+
+                updateCollectionPagination(collection, page, pageCount, isEmpty);
+
+                if (collection.dataset.bssScrollOnChange) {
+                    scrollToCollectionTop(collection);
+                }
+            }
+
+            function updateCollectionPagination(collection, page, pageCount, isEmpty) {
+                let pagination = getCollectionPagination(collection);
+                if (!pagination) return;
+
+                let paginationItems = [].slice.call(pagination.querySelectorAll('.page-item'));
+
+                if (pageCount === 1 || isEmpty) {
+                    pagination.style.setProperty('display', 'none', 'important');
+                } else {
+                    pagination.style.removeProperty('display');
+                }
+
+                let previousBtnDisabled = page - 1 <= 0;
+                let previousPage = previousBtnDisabled ? 1 : page - 1;
+
+                let nextBtnDisabled = page + 1 > pageCount;
+                let nextPage = nextBtnDisabled ? pageCount : page + 1;
+
+                for (let i = 0; i < paginationItems.length; i++) {
+                    let paginationItem = paginationItems[i];
+
+                    paginationItem.classList.remove('active', 'disabled');
+
+                    if (paginationItem.dataset.type === 'prev') {
+                        paginationItem.dataset.page = previousPage;
+
+                        if (previousBtnDisabled) {
+                            paginationItem.classList.add('disabled');
+                        }
+                    } else if (paginationItem.dataset.type === 'next') {
+                        paginationItem.dataset.page = nextPage;
+
+                        if (nextBtnDisabled) {
+                            paginationItem.classList.add('disabled');
+                        }
+                    } else {
+                        if (paginationItem.dataset.page > pageCount) {
+                            paginationItem.style.setProperty('display', 'none', 'important');
+                        } else {
+                            paginationItem.style.removeProperty('display');
+                        }
+
+                        if (paginationItem.dataset.page == page) {
+                            paginationItem.classList.add('active');
+                        }
+                    }
+                }
+            }
+
+            function scrollToCollectionTop(collection) {
+                const rect = collection.getBoundingClientRect();
+                const viewHeight = Math.max(document.documentElement.clientHeight, window.innerHeight);
+                const threshold = 100;
+
+                if (rect.top >= 0 && viewHeight - rect.top > threshold) return;
+
+                setTimeout(() => {
+                    collection.scrollIntoView({
+                        behavior: "smooth",
+                        block: "start",
+                        inline: "start"
+                    });
+                }, 0);
+            }
+
+            function updateTagNav(tagNav) {
+                const url = new URL(window.location.href);
+
+                let tagParam = 'tag';
+                let tag = url.searchParams.get(tagParam) || '';
+
+                renderTagNav(tagNav, tag);
+            }
+
+            function renderTagNav(tagNav, activeTag = '') {
+                if (!tagNav.dataset.bssSyncUrl) return;
+
+                let navItems = [].slice.call(tagNav.querySelectorAll('[data-bss-type="tag-loop-item"]'));
+
+                navItems.forEach(item => {
+                    const activeClassNode = item.dataset.hasOwnProperty('bssStateNode') ? item : item.querySelector('[data-bss-state-node]');
+                    if (!activeClassNode) return;
+
+                    activeClassNode.classList.remove('active');
+
+                    const link = item.dataset.bssHref;
+                    if (!linksToCurrentPage(link) || activeClassNode.classList.contains('disabled')) return;
+
+                    if (item.dataset.bssTag === activeTag) {
+                        activeClassNode.classList.add('active');
+                    }
+                });
+            }
+
+            function updateAuthorNav(authorNav) {
+                const url = new URL(window.location.href);
+
+                let authorParam = 'author';
+                let author = url.searchParams.get(authorParam) || '';
+
+                renderAuthorNav(authorNav, author);
+            }
+
+            function renderAuthorNav(authorNav, activeAuthor = '') {
+                if (!canFilterCollectionByAuthor(authorNav)) return;
+
+                authorNav.style.removeProperty('display');
+
+                let items = [].slice.call(authorNav.querySelectorAll('[data-bss-type="author-loop-item"]'));
+                items.forEach(item => item.classList.contains('author-' + activeAuthor) ? item.style.removeProperty('display') : item.style.setProperty('display', 'none', 'important'));
+            }
+        })();
+    </script>
+    <script src="../assets/bootstrap/js/bootstrap.min.js"></script>
+    <script src="../assets/js/bs-init.js"></script>
+</body>
+
+</html>

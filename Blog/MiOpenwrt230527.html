@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html data-bs-theme="auto" lang="zh">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>小米路由器3 刷openwrt固件并连接上校园网</title>
+    <meta name="description" content="小米路由器3 刷openwrt固件并连接上校园网的教程">
+    <script>
+        (function() {
+
+            // JavaScript snippet handling Dark/Light mode switching
+
+            const getStoredTheme = () => localStorage.getItem('theme');
+            const setStoredTheme = theme => localStorage.setItem('theme', theme);
+            const forcedTheme = document.documentElement.getAttribute('data-bss-forced-theme');
+
+            const getPreferredTheme = () => {
+
+                if (forcedTheme) return forcedTheme;
+
+                const storedTheme = getStoredTheme();
+                if (storedTheme) {
+                    return storedTheme;
+                }
+
+                const pageTheme = document.documentElement.getAttribute('data-bs-theme');
+
+                if (pageTheme) {
+                    return pageTheme;
+                }
+
+                return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            }
+
+            const setTheme = theme => {
+                if (theme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    document.documentElement.setAttribute('data-bs-theme', 'dark');
+                } else {
+                    document.documentElement.setAttribute('data-bs-theme', theme);
+                }
+            }
+
+            setTheme(getPreferredTheme());
+
+            const showActiveTheme = (theme, focus = false) => {
+                const themeSwitchers = [].slice.call(document.querySelectorAll('.theme-switcher'));
+
+                if (!themeSwitchers.length) return;
+
+                document.querySelectorAll('[data-bs-theme-value]').forEach(element => {
+                    element.classList.remove('active');
+                    element.setAttribute('aria-pressed', 'false');
+                });
+
+                for (const themeSwitcher of themeSwitchers) {
+
+                    const btnToActivate = themeSwitcher.querySelector('[data-bs-theme-value="' + theme + '"]');
+
+                    if (btnToActivate) {
+                        btnToActivate.classList.add('active');
+                        btnToActivate.setAttribute('aria-pressed', 'true');
+                    }
+                }
+            }
+
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+                const storedTheme = getStoredTheme();
+                if (storedTheme !== 'light' && storedTheme !== 'dark') {
+                    setTheme(getPreferredTheme());
+                }
+            });
+
+            window.addEventListener('DOMContentLoaded', () => {
+                showActiveTheme(getPreferredTheme());
+
+                document.querySelectorAll('[data-bs-theme-value]')
+                    .forEach(toggle => {
+                        toggle.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            const theme = toggle.getAttribute('data-bs-theme-value');
+                            setStoredTheme(theme);
+                            setTheme(theme);
+                            showActiveTheme(theme);
+                        })
+                    })
+            });
+        })();
+    </script>
+    <link rel="stylesheet" href="../assets/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../assets/css/bss-overrides.css">
+    <link rel="stylesheet" href="../assets/css/Navbar-With-Button-icons.css">
+    <link rel="stylesheet" href="https://stackedit.io/style.css">
+</head>
+
+<body class="stackedit">
+    <nav class="navbar navbar-expand-md bg-body py-3">
+        <div class="container"><a class="navbar-brand d-flex align-items-center" href="#"><span class="bs-icon-sm bs-icon-rounded bs-icon-primary d-flex justify-content-center align-items-center me-2 bs-icon"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16" class="bi bi-tools">
+                        <path d="M1 0 0 1l2.2 3.081a1 1 0 0 0 .815.419h.07a1 1 0 0 1 .708.293l2.675 2.675-2.617 2.654A3.003 3.003 0 0 0 0 13a3 3 0 1 0 5.878-.851l2.654-2.617.968.968-.305.914a1 1 0 0 0 .242 1.023l3.27 3.27a.997.997 0 0 0 1.414 0l1.586-1.586a.997.997 0 0 0 0-1.414l-3.27-3.27a1 1 0 0 0-1.023-.242L10.5 9.5l-.96-.96 2.68-2.643A3.005 3.005 0 0 0 16 3c0-.269-.035-.53-.102-.777l-2.14 2.141L12 4l-.364-1.757L13.777.102a3 3 0 0 0-3.675 3.68L7.462 6.46 4.793 3.793a1 1 0 0 1-.293-.707v-.071a1 1 0 0 0-.419-.814zm9.646 10.646a.5.5 0 0 1 .708 0l2.914 2.915a.5.5 0 0 1-.707.707l-2.915-2.914a.5.5 0 0 1 0-.708M3 11l.471.242.529.026.287.445.445.287.026.529L5 13l-.242.471-.026.529-.445.287-.287.445-.529.026L3 15l-.471-.242L2 14.732l-.287-.445L1.268 14l-.026-.529L1 13l.242-.471.026-.529.445-.287.287-.445.529-.026z"></path>
+                    </svg></span><span>杂七杂八の工具箱</span></a><button data-bs-toggle="collapse" class="navbar-toggler" data-bs-target="#navcol-1"><span class="visually-hidden">Toggle navigation</span><span class="navbar-toggler-icon"></span></button>
+            <div class="collapse navbar-collapse" id="navcol-1">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link active" href="./index.html">主页</a></li>
+                    <li class="nav-item"><a class="nav-link" href="./Blog.html">博客</a></li>
+                    <li class="nav-item"></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class="stackedit__html">
+        <h1>小米路由器3 刷openwrt固件并连接上校园网</h1>
+        <div class="d-flex flex-wrap gap-2" data-bss-type="author-loop">
+            <div class="author-zi-chen" data-bss-type="author-loop-item"><span>ZiChen</span></div>
+        </div><time datetime="2023-05-27">2023年5月27日</time>
+        <div class="d-flex flex-wrap gap-1 mb-3" data-bss-type="tag-loop"><span class="tag-technology" data-bss-type="tag-loop-item"><span class="badge bg-primary"><span>技术</span></span></span></div><blockquote>
+<p>本篇参考:<br>
+<a href="https://www.bilibili.com/video/BV1dL411A72f">https://www.bilibili.com/video/BV1dL411A72f</a><br>
+<a href="https://blog.csdn.net/adingge/article/details/125362140">https://blog.csdn.net/adingge/article/details/125362140</a><br>
+<a href="https://www.softool.cn/blog-95.html">小米路由器3刷 OpenWrt</a><br>
+恩山论坛贴</p>
+</blockquote>
+        <h2><a id="3_openwrt_6"></a>小米路由器3 刷openwrt</h2><blockquote>
+<p>本篇仅作为记录，实际设备不同可能导致流程不同</p>
+</blockquote>
+        <h3><a id="3OpenWRT_10"></a>下载小米路由器3的OpenWRT固件</h3>
+        <p>固件下载地址(用的是<strong>LEDE/OpenWrt</strong>固件): https://downloads.x-wrt.com/rom/ 固件的<strong>23.04</strong>可能随版本更新有所变化</p>
+        <p>我下载的2个固件为：<br><a href="https://downloads.x-wrt.com/rom/x-wrt-23.04-b202305152359-ramips-mt7620-xiaomi_miwifi-r3-squashfs-kernel1.bin">x-wrt-23.04-b202305152359-ramips-mt7620-xiaomi_miwifi-r3-squashfs-kernel1.bin</a></p>
+        <p><a href="https://downloads.x-wrt.com/rom/x-wrt-23.04-b202305152359-ramips-mt7620-xiaomi_miwifi-r3-squashfs-rootfs0.bin">x-wrt-23.04-b202305152359-ramips-mt7620-xiaomi_miwifi-r3-squashfs-rootfs0.bin</a></p>
+        <p><img src="../assets/img/Blog/MiOpenwrt230527/1.png" alt=""></p>
+        <h3><a id="_22"></a>提升路由器权限</h3>
+        <h4><a id="1__24"></a>1. 下载开发版</h4>
+        <p><a href="http://miwifi.com/miwifi_download.html">http://miwifi.com/miwifi_download.html</a></p>
+        <p><img src="../assets/img/Blog/MiOpenwrt230527/2.png" alt="img"></p>
+        <p><a href="http://bigota.miwifi.com/xiaoqiang/rom/r3/miwifi_r3_firmware_e9f31_2.27.120.bin">小米路由器3 开发版下载</a></p>
+        <h4><a id="2__32"></a>2. 安装开发版</h4>
+        <p>进入后台–选择手动升级–导入开发版–升级</p>
+        <h4><a id="3__SSH_36"></a>3. 开启 SSH</h4>
+        <h5><a id="31_SSHhttpsdmiwificomromsshuserId_38"></a>3.1 官网提供的SSH工具（需登录自己的账号）:<a href="https://d.miwifi.com/rom/ssh?userId=">点击跳转官网</a></h5>
+        <p><img src="../assets/img/Blog/MiOpenwrt230527/3.png" alt="img"></p>
+        <p>下载工具包，按照官网提示操作，<strong>要记下上面这个页面显示的你要刷的路由器的密码，之后SSH连接要用</strong></p>
+        <p><strong>注意：在整个刷机过程中最好不要拔下插入路由器的U盘，以免导致异常</strong></p>
+        <h5><a id="32__httpsopenwrtorgtohxiaomimir3_46"></a>3.2 开启方法（参考 https://openwrt.org/toh/xiaomi/mir3）</h5>
+        <p>登录路由器后台之后，会从地址栏到stok参数部分，提取其值，例如：</p><blockquote>
+<p>stok=8afbe612c65e43251e8a4dbff3cf67d1</p>
+</blockquote>
+        <p>以下指令逐个访问（在浏览器地址栏输入），访问前需要把<strong>stok=&lt;STOK&gt;</strong> 替换成上面你提取到的 <strong>stok=…</strong>,还需要把 <strong>&lt;IP&gt;</strong> 替换成你的路由器后台的IP，例如:</p>
+        <p><img src="../assets/img/Blog/MiOpenwrt230527/4.png" alt="请添加图片描述"></p>
+        <p>就可以提取到IP为<strong>192.168.15.1</strong></p><pre><code>* http://&lt;IP&gt;/cgi-bin/luci/;stok=&lt;STOK&gt;/web/home#router
+
+* http://&lt;IP&gt;/cgi-bin/luci/;stok=&lt;STOK&gt;/api/xqnetwork/set_wifi_ap?ssid=Xiaomi&amp;encryption=NONE&amp;enctype=NONE&amp;channel=1%3Bnvram%20set%20ssh%5Fen%3D1%3B%20nvram%20commit
+
+* http://&lt;IP&gt;/cgi-bin/luci/;stok=&lt;STOK&gt;/api/xqnetwork/set_wifi_ap?ssid=Xiaomi&amp;encryption=NONE&amp;enctype=NONE&amp;channel=1%3Bsed%20%2Di%20%22%3Ax%3AN%3As%2Fif%20%5C%5B%2E%2A%5C%3B%20then%5Cn%2E%2Areturn%200%5Cn%2E%2Afi%2F%23tb%2F%3Bb%20x%22%20%2Fetc%2Finit.d%2Fdropbear
+
+* http://&lt;IP&gt;/cgi-bin/luci/;stok=&lt;STOK&gt;/api/xqnetwork/set_wifi_ap?ssid=Xiaomi&amp;encryption=NONE&amp;enctype=NONE&amp;channel=1%3B%2Fetc%2Finit.d%2Fdropbear%20start
+</code></pre>
+        <hr>
+        <p><strong>注意： 后三条命令运行成功的标志是出现页面显示：{“msg”:“未能扫描到指定WiFi”,“code”:1617}</strong></p>
+        <h5><a id="33__SSH_73"></a>3.3 执行 SSH</h5><blockquote>
+<p>这里仅介绍Windows,其余方法参考 <a href="https://www.softool.cn/blog-95.html">小米路由器3刷 OpenWrt (softool.cn)</a></p>
+</blockquote>
+        <p>Windows: 使用工具WinSCP 配置为SSH协议连接</p>
+        <p><a href="https://winscp.net/eng/download.php">WinSCP官方下载链接</a></p>
+        <ol>
+            <li><p>打开WinSCP，会弹出新建站点界面<img src="../assets/img/Blog/MiOpenwrt230527/5.png" alt="请添加图片描述"></p></li>
+            <li><p>选择 <strong>文件协议</strong> 为 <strong>SCP</strong></p></li>
+            <li><p>填写主机名为 你的路由器后台IP</p></li>
+            <li><p>用户名为root</p></li>
+            <li><p>密码为步骤<strong>3.1</strong>中获得的密码</p></li>
+            <li><p>点击保存，然后点击登录</p></li>
+            <li><p>登录成功，此时右边出现以下界面<br><img src="../assets/img/Blog/MiOpenwrt230527/6.png" alt="请添加图片描述"></p></li>
+            <li><p>返回上一级，再跳转到 <strong>/tmp/</strong> 目录下，新建 <strong>miroms</strong> 文件夹，将步骤1下载的两个固件上传到此文件夹</p></li>
+            <li><p>上传完毕，此时你应该在/tmp/miroms文件夹下，打开终端（也就是图片中的从左往右数第四个按钮）<img src="../assets/img/Blog/MiOpenwrt230527/7.png" alt="请添加图片描述"></p></li>
+            <li><p>在终端“输入命令”处，依次输入以下命令</p><pre><code>mtd write x-wrt-22.03-b202206151531-ramips-mt7620-xiaomi_miwifi-r3-squashfs-kernel1.bin kernel1mtd write x-wrt-22.03-b202206151531-ramips-mt7620-xiaomi_miwifi-r3-squashfs-rootfs0.bin rootfs0reboot</code></pre><p>·注意：要将<strong>x-wrt-22.03-b202206151531-ramips-mt7620-xiaomi_miwifi-r3-squashfs-kernel1.bin</strong>和<strong>x-wrt-22.03-b202206151531-ramips-mt7620-xiaomi_miwifi-r3-squashfs-rootfs0.bin</strong>改为你下载的对应的固件的名字</p><p>·执行<strong>reboot</strong>之后路由器会重启，此时SSH连接会中断，路由器的WIFI也会中断，请稍等片刻等待重启完毕</p></li>
+            <li><p>安装完毕<br>你可以搜索到一个新的WIFI，<strong>为X-WRT-开头</strong>，这个就是你的路由器WIFI，到这一步你的路由器就算是完成刷机了！<br>新系统的相关信息如下<br>Address: 192.168.15.1<br>login: root<br>password: admin</p></li>
+        </ol>
+        <h2><a id="openwrt__120"></a>openwrt 连接校园网</h2><blockquote>
+<p>此处校园网仅指WPA2-Enterprise（PEAP）认证的校园网，登录时需要输入账号和密码的WIFI，参考视频:https://www.bilibili.com/video/BV1dL411A72f</p>
+</blockquote>
+        <h3><a id="1_24G_124"></a>1. 连接2.4G校园网：请按照参考视频设置</h3>
+        <p>补充：</p>
+        <h4><a id="WPA2EAPwin7_128"></a>在视频中服务端配置-接口配置-无线安全中选择加密为"WPA2-EAP(强安全性)"后，身份认证一栏需要按照贵校校园网win7连接校园网时所设置的身份验证类型进行选择</h4>
+        <p>如<img src="../assets/img/Blog/MiOpenwrt230527/8.png" alt="请添加图片描述"></p>
+        <p>笔者所在校园的校园网连接时使用的是EAP-MSCHAPv2身份验证</p>
+        <h4><a id="5G_WIFI5G__134"></a>搜索不到路由器的5G WIFI,路由器管理界面显示5G 无信号</h4>
+        <p><img src="../assets/img/Blog/MiOpenwrt230527/9.png" alt="请添加图片描述"></p>
+        <p>如此图，先上结论：本固件在经过以下设置后，可以搜索到路由器的5G信号WIFI，也可以正常使用，但在没有设备连接此WIFI情况下，会出现后台显示无信号的情况</p>
+        <h5><a id="_141"></a>操作步骤</h5>
+        <ul>
+            <li>按照下图对路由器5G频段的Master模式进行编辑</li>
+        </ul>
+        <p><img src="../assets/img/Blog/MiOpenwrt230527/10.png" alt="请添加图片描述"><img src="../assets/img/Blog/MiOpenwrt230527/11.png" alt="请添加图片描述"></p>
+        <p>即:<br>在设备设置-常规设置将工作频率的<strong>信道</strong>设置为<strong>157</strong><br>在设备设置-高级设置中将<strong>国家代码</strong>设置为<strong>AU</strong></p>
+        <ul>
+            <li>保存并应用，重启路由器，可能需要等待一段时间后，就可以搜索到路由器的5G WIFI信号</li>
+        </ul>
+        <h3><a id="_20230714_152"></a>补充 20230714</h3>
+        <ul>
+            <li>当出现5G频段速率低时，可尝试将信道改为<strong>153</strong> （SYSU东校园）</li>
+        </ul>
+    </div>
+    <footer class="text-center bg-body" data-bs-theme="light">
+        <div class="container py-4 py-lg-5">
+            <ul class="list-inline">
+                <li class="list-inline-item me-4"><a href="#"></a></li>
+                <li class="list-inline-item me-4"><a href="https://github.com/Zichen3317"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16" class="bi bi-github text-body">
+                            <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8"></path>
+                        </svg></a></li>
+                <li class="list-inline-item"><a href="#"></a></li>
+            </ul>
+            <p class="text-body mb-0">Copyright © 2026 ZiChen</p>
+        </div>
+    </footer>
+    <script>
+        (function() {
+            let collections = document.querySelectorAll('[data-bss-type="blog-loop"]');
+            let tagNavs = document.querySelectorAll('[data-bss-type="tag-nav"]');
+            let tagLoops = document.querySelectorAll('[data-bss-type="tag-loop"]');
+            let authorLoops = document.querySelectorAll('[data-bss-type="author-loop"]');
+            let authorNavs = document.querySelectorAll('[data-bss-type="author-nav"]');
+
+            window.addEventListener("popstate", (e) => {
+                for (let collection of collections) {
+                    updateCollection(collection);
+                }
+
+                for (let tagNav of tagNavs) {
+                    updateTagNav(tagNav);
+                }
+
+                for (let authorNav of authorNavs) {
+                    updateAuthorNav(authorNav);
+                }
+            });
+
+            for (let collection of collections) {
+
+                updateCollection(collection);
+
+                if (!canPaginateCollection(collection)) continue;
+
+                let pagination = collection.querySelector('[data-bss-type="blog-loop-pagination"]');
+
+                pagination.addEventListener('click', function(e) {
+                    let paginationItem = e.target.closest('.page-item');
+                    if (!paginationItem) return;
+
+                    e.preventDefault();
+
+                    if (paginationItem.classList.contains('disabled') || paginationItem.classList.contains('active')) return;
+
+                    let collection = paginationItem.closest('[data-bss-type="blog-loop"]');
+                    if (!collection) return;
+
+                    let page = parseInt(paginationItem.dataset.page);
+                    if (!page) return;
+
+                    let pageParam = getPageParameter(collection);
+
+                    if (pageParam) {
+                        const url = new URL(window.location);
+                        url.searchParams.set(pageParam, page);
+                        history.pushState({
+                            [pageParam]: page
+                        }, document.title, url);
+
+                        for (let c of collections) {
+                            let param = getPageParameter(c);
+                            if (param !== pageParam) continue;
+                            updateCollection(c);
+                        }
+                    } else {
+                        updateCollection(collection, page);
+                    }
+                });
+            }
+
+            for (let tagNav of tagNavs) {
+                updateTagNav(tagNav);
+                tagNav.addEventListener('click', onTagClick);
+            }
+
+            for (let tagLoop of tagLoops) {
+                tagLoop.addEventListener('click', onTagClick);
+            }
+
+            for (let authorLoop of authorLoops) {
+                authorLoop.addEventListener('click', onAuthorClick);
+            }
+
+            for (let authorNav of authorNavs) {
+                updateAuthorNav(authorNav);
+            }
+
+            function onTagClick(e) {
+                onBlogFilterClick(e);
+
+                for (let nav of tagNavs) {
+                    updateTagNav(nav);
+                }
+            }
+
+            function onAuthorClick(e) {
+                onBlogFilterClick(e);
+
+                for (let authorNav of authorNavs) {
+                    updateAuthorNav(authorNav);
+                }
+            }
+
+            function onBlogFilterClick(e) {
+                const item = e.target.closest('[data-bss-filter="blog"]');
+                if (!item || !item.dataset.hasOwnProperty('bssHref') || !item.dataset.hasOwnProperty('bssFilterParam')) return;
+
+                const stateNode = item.dataset.hasOwnProperty('bssStateNode') ? item : item.querySelector('[data-bss-state-node]');
+
+                if (stateNode && (stateNode.classList.contains('disabled') || stateNode.classList.contains('active'))) {
+                    e.preventDefault();
+                    return;
+                }
+
+                const link = item.dataset.bssHref;
+                if (!linksToCurrentPage(link)) return;
+
+                e.preventDefault();
+
+                const url = new URL(window.location);
+                const filterParam = item.dataset.bssFilterParam;
+                const filterValue = item.dataset.bssFilterValue || '';
+
+                const collectionsToUpdate = [];
+                const newQueryParams = {
+                    [filterParam]: filterValue
+                };
+
+                for (let c of collections) {
+                    if (!canFilterCollection(c)) continue;
+                    collectionsToUpdate.push(c);
+
+                    let pageParam = getPageParameter(c);
+                    let page = url.searchParams.get(pageParam);
+                    if (page === null || page == 1) continue;
+
+                    newQueryParams[pageParam] = 1;
+                }
+
+                for (let param in newQueryParams) {
+                    if (newQueryParams[param]) {
+                        url.searchParams.set(param, newQueryParams[param]);
+                    } else {
+                        url.searchParams.delete(param);
+                    }
+                }
+
+                history.pushState(newQueryParams, document.title, url);
+
+                for (let c of collectionsToUpdate) {
+                    updateCollection(c);
+                }
+            }
+
+            function getCollectionFilters(collection) {
+                let filters = [];
+
+                try {
+                    const parsed = JSON.parse(collection.dataset.bssFilters);
+
+                    if (Array.isArray(parsed)) {
+                        filters = parsed;
+                    }
+                } catch (e) {}
+
+                return filters;
+            }
+
+            function getCollectionEmptyFilterAction(collection, filter = '') {
+                let emptyFilterActions = [];
+
+                try {
+                    const parsed = JSON.parse(collection.dataset.bssEmptyFilterActions);
+
+                    if (Array.isArray(parsed)) {
+                        emptyFilterActions = parsed;
+                    }
+                } catch (e) {}
+
+                const action = emptyFilterActions.find(action => action.filter === filter);
+
+                return action ? action.value : '';
+            }
+
+            function canFilterCollection(collection) {
+                return !!getCollectionFilters(collection).length;
+            }
+
+            function canFilterCollectionByTag(collection) {
+                return getCollectionFilters(collection).includes('tag');
+            }
+
+            function canFilterCollectionByAuthor(collection) {
+                return getCollectionFilters(collection).includes('author');
+            }
+
+            function shouldShowAllItemsForEmptyFilter(collection, filter = '') {
+                return getCollectionEmptyFilterAction(collection, filter) === 'show-all';
+            }
+
+            function canPaginateCollection(collection) {
+                return !!getCollectionPagination(collection);
+            }
+
+            function getCollectionPagination(collection) {
+                return collection.querySelector('[data-bss-type="blog-loop-pagination"]');
+            }
+
+            function getPageParameter(collection) {
+                return collection.dataset.bssPageParam;
+            }
+
+            function linksToCurrentPage(path = '') {
+                let currentURL, url;
+
+                try {
+                    currentURL = new URL(window.location);
+                    url = new URL(path, window.location.href);
+                } catch (e) {
+                    console.error(e);
+                }
+
+                return currentURL.origin === url.origin && currentURL.pathname === url.pathname;
+            }
+
+            function updateCollection(collection, page, activeTag = '', activeAuthor = '') {
+
+                const url = new URL(window.location.href);
+
+                if (canPaginateCollection(collection)) {
+                    if (!page) {
+                        let pageParam = getPageParameter(collection);
+                        page = (pageParam ? url.searchParams.get(pageParam) : 1) || 1;
+                    }
+                }
+
+                if (canFilterCollectionByTag(collection) && !activeTag) {
+                    let tagParam = 'tag';
+                    activeTag = url.searchParams.get(tagParam) || '';
+                }
+
+                if (canFilterCollectionByAuthor(collection) && !activeAuthor) {
+                    let authorParam = 'author';
+                    activeAuthor = url.searchParams.get(authorParam) || '';
+                }
+
+                renderCollectionPage(collection, page, activeTag, activeAuthor);
+            }
+
+            function renderCollectionPage(collection, page = 1, activeTag = '', activeAuthor = '') {
+
+                page = Math.max(parseInt(page, 10), 1);
+
+                collection.style.removeProperty('display');
+
+                let loopBase = collection.querySelector('[data-bss-type="blog-loop-base"]');
+                loopBase && loopBase.style.removeProperty('display');
+
+                let emptyState = collection.querySelector('[data-bss-type="empty-state"]');
+                emptyState && emptyState.style.setProperty('display', 'none', 'important');
+
+                let listItems = [].slice.call(collection.querySelectorAll('[data-bss-type="blog-loop-item"]'));
+                listItems.forEach(item => item.style.setProperty('display', 'none', 'important'));
+
+                if (canFilterCollectionByTag(collection)) {
+                    listItems = listItems.filter(item => activeTag ? item.classList.contains('post-tag-' + activeTag) : shouldShowAllItemsForEmptyFilter(collection, 'tag'));
+                }
+
+                if (canFilterCollectionByAuthor(collection)) {
+                    listItems = listItems.filter(item => activeAuthor ? item.classList.contains('post-author-' + activeAuthor) : shouldShowAllItemsForEmptyFilter(collection, 'author'));
+                }
+
+                let perPage = collection.dataset.bssPerpage || listItems.length;
+                let visibleListItems = listItems.slice((page - 1) * perPage, page * perPage);
+                visibleListItems.forEach(item => item.style.removeProperty('display'));
+
+                let isEmpty = !visibleListItems.length;
+
+                if (isEmpty) {
+                    loopBase && loopBase.style.setProperty('display', 'none', 'important');
+                    emptyState && emptyState.style.removeProperty('display');
+                }
+
+                let itemCount = listItems.length;
+                let pageCount = Math.max(Math.ceil(itemCount / perPage), 1);
+
+                updateCollectionPagination(collection, page, pageCount, isEmpty);
+
+                if (collection.dataset.bssScrollOnChange) {
+                    scrollToCollectionTop(collection);
+                }
+            }
+
+            function updateCollectionPagination(collection, page, pageCount, isEmpty) {
+                let pagination = getCollectionPagination(collection);
+                if (!pagination) return;
+
+                let paginationItems = [].slice.call(pagination.querySelectorAll('.page-item'));
+
+                if (pageCount === 1 || isEmpty) {
+                    pagination.style.setProperty('display', 'none', 'important');
+                } else {
+                    pagination.style.removeProperty('display');
+                }
+
+                let previousBtnDisabled = page - 1 <= 0;
+                let previousPage = previousBtnDisabled ? 1 : page - 1;
+
+                let nextBtnDisabled = page + 1 > pageCount;
+                let nextPage = nextBtnDisabled ? pageCount : page + 1;
+
+                for (let i = 0; i < paginationItems.length; i++) {
+                    let paginationItem = paginationItems[i];
+
+                    paginationItem.classList.remove('active', 'disabled');
+
+                    if (paginationItem.dataset.type === 'prev') {
+                        paginationItem.dataset.page = previousPage;
+
+                        if (previousBtnDisabled) {
+                            paginationItem.classList.add('disabled');
+                        }
+                    } else if (paginationItem.dataset.type === 'next') {
+                        paginationItem.dataset.page = nextPage;
+
+                        if (nextBtnDisabled) {
+                            paginationItem.classList.add('disabled');
+                        }
+                    } else {
+                        if (paginationItem.dataset.page > pageCount) {
+                            paginationItem.style.setProperty('display', 'none', 'important');
+                        } else {
+                            paginationItem.style.removeProperty('display');
+                        }
+
+                        if (paginationItem.dataset.page == page) {
+                            paginationItem.classList.add('active');
+                        }
+                    }
+                }
+            }
+
+            function scrollToCollectionTop(collection) {
+                const rect = collection.getBoundingClientRect();
+                const viewHeight = Math.max(document.documentElement.clientHeight, window.innerHeight);
+                const threshold = 100;
+
+                if (rect.top >= 0 && viewHeight - rect.top > threshold) return;
+
+                setTimeout(() => {
+                    collection.scrollIntoView({
+                        behavior: "smooth",
+                        block: "start",
+                        inline: "start"
+                    });
+                }, 0);
+            }
+
+            function updateTagNav(tagNav) {
+                const url = new URL(window.location.href);
+
+                let tagParam = 'tag';
+                let tag = url.searchParams.get(tagParam) || '';
+
+                renderTagNav(tagNav, tag);
+            }
+
+            function renderTagNav(tagNav, activeTag = '') {
+                if (!tagNav.dataset.bssSyncUrl) return;
+
+                let navItems = [].slice.call(tagNav.querySelectorAll('[data-bss-type="tag-loop-item"]'));
+
+                navItems.forEach(item => {
+                    const activeClassNode = item.dataset.hasOwnProperty('bssStateNode') ? item : item.querySelector('[data-bss-state-node]');
+                    if (!activeClassNode) return;
+
+                    activeClassNode.classList.remove('active');
+
+                    const link = item.dataset.bssHref;
+                    if (!linksToCurrentPage(link) || activeClassNode.classList.contains('disabled')) return;
+
+                    if (item.dataset.bssTag === activeTag) {
+                        activeClassNode.classList.add('active');
+                    }
+                });
+            }
+
+            function updateAuthorNav(authorNav) {
+                const url = new URL(window.location.href);
+
+                let authorParam = 'author';
+                let author = url.searchParams.get(authorParam) || '';
+
+                renderAuthorNav(authorNav, author);
+            }
+
+            function renderAuthorNav(authorNav, activeAuthor = '') {
+                if (!canFilterCollectionByAuthor(authorNav)) return;
+
+                authorNav.style.removeProperty('display');
+
+                let items = [].slice.call(authorNav.querySelectorAll('[data-bss-type="author-loop-item"]'));
+                items.forEach(item => item.classList.contains('author-' + activeAuthor) ? item.style.removeProperty('display') : item.style.setProperty('display', 'none', 'important'));
+            }
+        })();
+    </script>
+    <script src="../assets/bootstrap/js/bootstrap.min.js"></script>
+    <script src="../assets/js/bs-init.js"></script>
+</body>
+
+</html>
